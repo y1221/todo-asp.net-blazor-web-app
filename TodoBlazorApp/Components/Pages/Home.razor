@@ -1,7 +1,149 @@
 ﻿@page "/"
+@rendermode InteractiveServer
+@inject TodoService TodoService
 
 <PageTitle>Home</PageTitle>
 
-<h1>Hello, world!</h1>
+<div class="container">
+    <h1>タスク一覧</h1>
 
-Welcome to your new app.
+    @if (isLoading)
+    {
+        <p>読み込み中…</p>
+    }
+    else if (isError)
+    {
+        <p style="color: red">@message</p>
+    }
+    else
+    {
+        @if (todos.Count < 1)
+        {
+            <p>未完了タスクはありません。</p>
+        }
+        else
+        {
+            <h2>未完了タスク</h2>
+
+            <table class="table table-striped">
+                <tbody>
+                    @foreach (var item in todos)
+                    {
+                        <tr>
+                            <td>@item.Name</td>
+                            <td>
+                                <button class="btn btn-success me-2" @onclick="() => DoneAsync(item.Id)">完了</button>
+                            </td>
+                            <td>
+                                <button class="btn btn-danger" @onclick="() => DeleteAsync(item.Id)">削除</button>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        }
+
+        @if (doneTodos.Count < 1)
+        {
+            <p>完了済みタスクはありません。</p>
+        }
+        else
+        {
+            <h2>完了済みタスク</h2>
+
+            <table class="table table-striped">
+                <tbody>
+                    @foreach (var item in doneTodos)
+                    {
+                        <tr>
+                            <td>@item.Name</td>
+                            <td>
+                                <button class="btn btn-success me-2" @onclick="() => ReturnAsync(item.Id)">戻す</button>
+                            </td>
+                            <td>
+                                <button class="btn btn-danger" @onclick="() => DeleteAsync(item.Id)">削除</button>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        }
+    }
+</div>
+
+@code {
+    private bool isLoading = true;
+    private bool isError = false;
+    private string message = string.Empty;
+    private List<Todo> todos = new List<Todo>();
+    private List<Todo> doneTodos = new List<Todo>();
+
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            await InitializeTodosAsync();
+        }
+        catch (Exception ex)
+        {
+            OutputError(ex);
+        }
+        finally
+        {
+            isLoading = false;
+        }
+    }
+
+    private async Task InitializeTodosAsync()
+    {
+        todos = await TodoService.GetTodosAsync();
+        doneTodos = await TodoService.GetDoneTodosAsync();
+    }
+
+    private void OutputError(Exception ex)
+    {
+        isError = true;
+
+        message = $"エラー: {ex.Message}";
+        Console.WriteLine(message);
+    }
+
+    private async Task DoneAsync(int id)
+    {
+        try
+        {
+            await TodoService.ChangeIsDoneAsync(id, true);
+            await InitializeTodosAsync();
+        }
+        catch (Exception ex)
+        {
+            OutputError(ex);
+        }
+    }
+
+    private async Task ReturnAsync(int id)
+    {
+        try
+        {
+            await TodoService.ChangeIsDoneAsync(id, false);
+            await InitializeTodosAsync();
+        }
+        catch (Exception ex)
+        {
+            OutputError(ex);
+        }
+    }
+
+    private async Task DeleteAsync(int id)
+    {
+        try
+        {
+            await TodoService.DeleteAsync(id);
+            await InitializeTodosAsync();
+        }
+        catch (Exception ex)
+        {
+            OutputError(ex);
+        }
+    }
+}

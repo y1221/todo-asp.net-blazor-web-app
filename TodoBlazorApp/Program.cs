@@ -2,6 +2,7 @@ using Microsoft.EntityFrameworkCore;
 using TodoBlazorApp.Components;
 using TodoBlazorApp.Data;
 using TodoBlazorApp.Seeds;
+using TodoBlazorApp.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -10,6 +11,7 @@ builder.Services.AddRazorComponents()
     .AddInteractiveServerComponents();
 builder.Services.AddDbContext<TodoBlazorAppContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("TodoBlazorAppContext") ?? throw new InvalidOperationException("Connection string 'TodoBlazorAppContext' not found.")));
+builder.Services.AddScoped<TodoService>();
 
 var app = builder.Build();
 
