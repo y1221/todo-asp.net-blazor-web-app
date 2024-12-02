@@ -35,5 +35,18 @@ namespace TodoBlazorApp.Services
                 await _context.SaveChangesAsync();
             }
         }
+
+        public async Task DeleteAsync(int id)
+        {
+            var todo = await _context.Todo.FindAsync(id);
+
+            if (todo != null)
+            {
+                todo.IsDelete = true;
+                _context.Attach(todo).State = EntityState.Modified;
+
+                await _context.SaveChangesAsync();
+            }
+        }
     }
 }
