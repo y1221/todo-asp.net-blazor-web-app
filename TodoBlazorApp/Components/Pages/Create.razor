@@ -1,0 +1,50 @@
+﻿@page "/new"
+@rendermode InteractiveServer
+@inject TodoService TodoService
+@using TodoBlazorApp.Models
+
+<PageTitle>New</PageTitle>
+
+<div class="container">
+    <h1>新規タスク登録</h1>
+
+    @if (showSuccessMessage)
+    {
+        <div class="alert alert-success alert-dismissible fade show">
+            正常に登録されました！
+            <button type="button" class="btn-close" @onclick="() => showSuccessMessage = false"></button>
+        </div>
+    }
+
+    <EditForm Model="@todo" OnValidSubmit="@Submit">
+        <DataAnnotationsValidator />
+
+        <div class="mb-3">
+            <ValidationMessage For="@(() => todo.Name)" />
+            <label for="name" class="form-label">タスク：</label>
+            <InputText id="name" class="form-control" @bind-Value="todo.Name"
+                       placeholder="タスク名を入力してください" />
+        </div>
+
+        <input type="submit" value="登録" class="btn btn-primary" />
+    </EditForm>
+</div>
+@code {
+    private Todo todo = new Todo();
+    private bool showSuccessMessage = false;
+
+    private async Task Submit()
+    {
+        try
+        {
+            await TodoService.CreateAsync(todo);
+
+            showSuccessMessage = true;
+            todo = new Todo();
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine(ex.Message);
+        }
+    }
+}
