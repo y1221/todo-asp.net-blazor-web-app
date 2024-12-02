@@ -48,5 +48,12 @@ namespace TodoBlazorApp.Services
                 await _context.SaveChangesAsync();
             }
         }
+
+        public async Task CreateAsync(Todo todo)
+        {
+            _context.Todo.Add(todo);
+
+            await _context.SaveChangesAsync();
+        }
     }
 }
